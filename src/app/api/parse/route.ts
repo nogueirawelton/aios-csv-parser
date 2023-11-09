@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const path = `tmp/${file.name}`;
+    const path = `/tmp/${file.name}`;
     await writeFile(path, buffer);
 
     const url = await parseCsv(path);
