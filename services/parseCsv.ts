@@ -46,7 +46,8 @@ const transformer = transform((row, callback) => {
 export async function parseCsv(path: string) {
   const filename = `parsed-csv/${Date.now()}.csv`;
 
-  fs.createReadStream(path)
+  await fs
+    .createReadStream(path)
     .pipe(parser)
     .pipe(transformer) // Aplica a conversão de data
     .pipe(stringifier) // Converte de volta para CSV
@@ -54,7 +55,7 @@ export async function parseCsv(path: string) {
 
   const [url] = await bucket.file(filename).getSignedUrl({
     action: 'read',
-    expires: moment(new Date()).add(1, 'days').format(), // Data de expiração opcional
+    expires: moment(new Date()).add(2, 'days').format(), // Data de expiração opcional
   });
 
   return url;
