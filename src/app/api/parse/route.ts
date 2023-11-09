@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   if (file) {
     const end = parseInt(start, 10) + file.size;
-    const filePath = path.join('tmp', fileName);
+    const filePath = path.join('/tmp', fileName);
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
