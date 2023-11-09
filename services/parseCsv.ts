@@ -5,6 +5,7 @@ import { stringify } from 'csv-stringify';
 import { transform } from 'stream-transform';
 import moment from 'moment';
 import { Storage } from '@google-cloud/storage';
+import { pipeline } from 'stream';
 
 moment.locale('pt-br');
 
@@ -46,12 +47,16 @@ const transformer = transform((row, callback) => {
 export async function parseCsv(path: string) {
   const filename = `parsed-csv/${Date.now()}.csv`;
 
-  await fs
-    .createReadStream(path)
-    .pipe(parser)
-    .pipe(transformer) // Aplica a conversão de data
-    .pipe(stringifier) // Converte de volta para CSV
-    .pipe(bucket.file(filename).createWriteStream()); // Escreve o novo CSV
+  await new Promise((resolve) => {
+    fs.createReadStream(path)
+      .pipe(parser)
+      .pipe(transformer) // Aplica a conversão de data
+      .pipe(stringifier) // Converte de volta para CSV
+      .pipe(bucket.file(filename).createWriteStream())
+      .on('end', () => {
+        resolve(null);
+      });
+  });
 
   const [url] = await bucket.file(filename).getSignedUrl({
     action: 'read',
