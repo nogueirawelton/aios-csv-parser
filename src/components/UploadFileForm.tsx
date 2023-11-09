@@ -20,17 +20,30 @@ export function UploadFileForm() {
       return;
     }
 
-    const body = new FormData();
-    body.append('file', file);
+    const chunkSize = 1 * 1024 * 1024 * 4; // 1MB
+    let start = 0;
 
-    const response = await fetch('/api/parse', {
-      method: 'POST',
-      body,
-    });
+    while (start < file.size) {
+      const chunk = file.slice(start, start + chunkSize);
+      const formData = new FormData();
+      formData.append('file', chunk);
+      formData.append('fileName', file.name);
+      formData.append('fileSize', String(file.size));
+      formData.append('start', String(start));
 
-    const { url } = await response.json();
+      const response = await fetch('/api/parse', {
+        method: 'POST',
+        body: formData,
+      });
 
-    setUrl(url);
+      const { url } = await response.json();
+
+      if (url) {
+        setUrl(url);
+      }
+
+      start += chunkSize;
+    }
   }
 
   return (
