@@ -5,7 +5,6 @@ import { stringify } from 'csv-stringify';
 import { transform } from 'stream-transform';
 import moment from 'moment';
 import { Storage } from '@google-cloud/storage';
-import { pipeline } from 'stream';
 
 moment.locale('pt-br');
 
@@ -21,11 +20,10 @@ const storage = new Storage({
   },
 });
 
-const bucket = storage.bucket('aios-parser.appspot.com'); // Substitua com o nome do seu bucket
+const bucket = storage.bucket('aios-parser.appspot.com');
 
 const columns = [2, 5, 6, 7];
 
-// Função para converter timestamp para formato de data brasileiro
 const timestampToDateBR = (timestamp: number) => {
   const date = new Date(timestamp * 1000);
   return [moment(date).format('L'), moment(date).format('LTS')];
@@ -47,20 +45,15 @@ const transformer = transform((row, callback) => {
 export async function parseCsv(path: string) {
   const filename = `parsed-csv/${Date.now()}.csv`;
 
-  await new Promise((resolve) => {
-    fs.createReadStream(path)
-      .pipe(parser)
-      .pipe(transformer) // Aplica a conversão de data
-      .pipe(stringifier) // Converte de volta para CSV
-      .pipe(bucket.file(filename).createWriteStream())
-      .on('end', () => {
-        resolve(null);
-      });
-  });
+  fs.createReadStream(path)
+    .pipe(parser)
+    .pipe(transformer)
+    .pipe(stringifier)
+    .pipe(bucket.file(filename).createWriteStream());
 
   const [url] = await bucket.file(filename).getSignedUrl({
     action: 'read',
-    expires: moment(new Date()).add(2, 'days').format(), // Data de expiração opcional
+    expires: moment(new Date()).add(2, 'days').format(),
   });
 
   return url;

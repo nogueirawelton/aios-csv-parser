@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // // Escreva o chunk no arquivo
     const writer = fs.createWriteStream(filePath, {
       flags: 'a',
       start: parseInt(start, 10),
@@ -27,19 +26,16 @@ export async function POST(req: NextRequest) {
     writer.write(buffer);
     writer.end();
 
-    // // Verifique se é o último chunk verificando o tamanho do arquivo
-
     if (end >= parseInt(fileSize, 10)) {
       const url = await parseCsv(filePath);
 
       return Response.json({
         url,
       });
-    } else {
-      return Response.json({
-        url: null,
-      });
     }
   }
-  return Response.json('error');
+
+  return Response.json({
+    url: null,
+  });
 }

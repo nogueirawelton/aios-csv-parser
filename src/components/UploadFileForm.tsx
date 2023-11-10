@@ -20,7 +20,7 @@ export function UploadFileForm() {
       return;
     }
 
-    const chunkSize = 1 * 1024 * 1024 * 4; // 1MB
+    const chunkSize = 1 * 1024 * 1024 * 4; // 4MB
     let start = 0;
 
     while (start < file.size) {
